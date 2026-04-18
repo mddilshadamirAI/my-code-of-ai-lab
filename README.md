@@ -1,15 +1,1 @@
-# Python UV Starter
-
-This is a simple Python [uv](https://docs.astral.uv) starter in Firebase Studio.
-
-## Running
-
-```
-uv run main.py
-```
-
-## Add dependencies
-
-```
-uv add ruff
-```
+Today A new repositories while i am in kolkata and its my day 1 as working day in kolkata 
