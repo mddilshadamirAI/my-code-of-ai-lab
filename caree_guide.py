@@ -19,3 +19,4 @@ else:
     print("Focus on finding your passion first!")
 
 print("\n[Status: Saved to local workspace]")
+print("wait for the next update")
