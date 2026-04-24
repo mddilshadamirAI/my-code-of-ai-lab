@@ -51,13 +51,13 @@ while True:
 print("Thnks for using my tool!")
 feed = int(input("If you want to give me feedback choose with a range of 1 to 5"))
 if feed == 1:
-    print("Thank you for your feedback, we will improve our system")
-if feed == 2:
-    print("Thank you for your feedback, we will improve our system")
-if feed == 3:
-    print("Thank you for your feedback, we will improve our system")
-if feed == 4:
-    print("Thank you for your feedback, it's very good feeling to see you satisfied with our system ")
-if feed == 5:
-    print("Thank you for your feedback, it's very good feeling to see you extremely satisfied with our system")
+   print("Thank you for your feedback, we will improve our system")
+elif feed == 2:
+     print("Thank you for your feedback, we will improve our system")
+elif feed == 3:
+     print("Thank you for your feedback, we will improve our system")
+elif feed == 4:
+     print("Thank you for your feedback, it's very good feeling to see you satisfied with our system ")
+elif feed == 5:
+     print("Thank you for your feedback, it's very good feeling to see you extremely satisfied with our system")
 
