@@ -3,5 +3,5 @@ It's amazing to be here in Kolkata while I was setting my workspace today..
 Today A day with only lecture oriented study.
 Today i created a simple clinic tool..
 Just worked with docker and lecture attended..
-
+Attended lecture of CS50P..
 
