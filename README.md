@@ -4,5 +4,4 @@ Today A day with only lecture oriented study.
 Today i created a simple clinic tool..
 Just worked with docker and lecture attended..
 Attended lecture of CS50P..
-Updated service.py
-
+Updated service.py and followed the python documentation..
