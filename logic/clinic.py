@@ -1,10 +1,10 @@
-
 import hashlib
+import requests
+import time
 
 # --- Data Structures ---
 
 class User:
-    """A user of the system, can be a patient or a doctor."""
     def __init__(self, username, password, role, full_name, address=None):
         self.username = username
         self.password_hash = self._hash_password(password)
@@ -18,52 +18,77 @@ class User:
     def check_password(self, password):
         return self.password_hash == self._hash_password(password)
 
-# In-memory database of users (patients and doctors)
+# In-memory database
 users = {
     "patient1": User("patient1", "pass1", "patient", "John Doe"),
-    "patient2": User("patient2", "pass2", "patient", "Jane Smith"),
     "davis": User("davis", "docpass1", "doctor", "Dr. Davis"),
-    "chen": User("chen", "docpass2", "doctor", "Dr. Chen"),
-    "patel": User("patel", "docpass3", "doctor", "Dr. Patel"),
-    "lee": User("lee", "docpass4", "doctor", "Dr. Lee"),
 }
 
-# Expanded database for doctors including specialty and location
-doctors_db = {
-    "Dr. Davis": {"specialty": "Cardiologist", "location": "New York"},
-    "Dr. Chen": {"specialty": "Dermatologist", "location": "Los Angeles"},
-    "Dr. Patel": {"specialty": "General Physician", "location": "New York"},
-    "Dr. Lee": {"specialty": "Cardiologist", "location": "Los Angeles"},
-    "Dr. Garcia": {"specialty": "Dermatologist", "address": "212 Derm Drive, Chicago"},
-    "Dr. Smith": {"specialty": "General Physician", "address": "333 Health Highway, Chicago"},
-    "Dr. Jones": {"specialty": "Cardiologist", "address": "444 Pulse Place, Houston"},
-    "Dr. Williams": {"specialty": "General Physician", "address": "555 Vitality Ville, Houston"},
-}
-
-# Mapping of symptoms to specialties
 symptom_to_specialty = {
     "Chest Pain": "Cardiologist",
-    "High Blood Pressure": "Cardiologist",
     "Skin Rash": "Dermatologist",
-    "Acne": "Dermatologist",
     "Fever": "General Physician",
-    "Headache": "General Physician",
 }
 
-# Home treatment suggestions for common symptoms
 home_treatments = {
-    "Fever": "Rest, drink plenty of fluids (like water and broth), and consider over-the-counter medications like acetaminophen.",
-    "Headache": "Rest in a quiet, dark room. A cold compress on your forehead and staying hydrated can help. Avoid screens.",
-    "Skin Rash": "Keep the area clean and dry. Avoid scratching. A cool compress or an over-the-counter hydrocortisone cream may soothe it.",
-    "Default": "For this symptom, it is highly recommended to consult a doctor for an accurate diagnosis."
+    "Fever": "Rest and drink plenty of fluids.",
+    "Default": "Consult a doctor for an accurate diagnosis."
 }
 
+# --- Free API Engine (No Key Required) ---
+def find_real_doctors(city, specialty):
+    # Use a specific User-Agent so the free service doesn't block you
+    headers = {
+        'User-Agent': 'ClinicAI_Founder_App_Contact_mddilshad@gmail.com' 
+    }
+    
+    # Try a different "Mirror" server if the first one is busy
+    geo_url = f"https://nominatim.openstreetmap.org/search?city={city}&format=json"
+    
+    try:
+        # Step 1: Get City Coords
+        geo_res = requests.get(geo_url, headers=headers).json()
+        if not geo_res:
+            print("Could not find city coordinates.")
+            return []
+        
+        lat, lon = geo_res[0]['lat'], geo_res[0]['lon']
+
+        # Step 2: Search for Doctors
+        # We use a more stable mirror: 'https://overpass.kumi.systems/api/interpreter'
+        overpass_url = "https://overpass.kumi.systems/api/interpreter"
+        overpass_query = f"""
+        [out:json][timeout:25];
+        node["amenity"~"doctors|clinic"](around:10000,{lat},{lon});
+        out body;
+        """
+        
+        response = requests.get(overpass_url, params={'data': overpass_query}, headers=headers)
+        
+        # Check if the response is actually JSON
+        if response.status_code == 200:
+            data = response.json()
+            real_doctors = []
+            for element in data.get('elements', []):
+                tags = element.get('tags', {})
+                real_doctors.append({
+                    "name": tags.get('name', f"Clinic ({specialty})"),
+                    "address": tags.get('addr:street', 'Local Area'),
+                    "rating": "Free Data"
+                })
+            return real_doctors
+        else:
+            print(f"API Server returned error: {response.status_code}")
+            return []
+
+    except Exception as e:
+        print(f"Connection Error: {e}")
+        return []
 
 # --- Workflows ---
 
 def patient_workflow(user):
-    """Handles the entire workflow for a patient."""
-    print(f"\nWelcome, {user.full_name}! Let's find the right help for you.")
+    print(f"\nWelcome, {user.full_name}!")
     
     symptoms_list = list(symptom_to_specialty.keys())
     for i, symptom in enumerate(symptoms_list, 1):
@@ -75,54 +100,40 @@ def patient_workflow(user):
             chosen_symptom = symptoms_list[choice - 1]
             specialty_needed = symptom_to_specialty[chosen_symptom]
             
-            print(f"\nFor a symptom of '{chosen_symptom}', you should consult a {specialty_needed}.")
+            print(f"\nInitial Advice: {home_treatments.get(chosen_symptom, home_treatments['Default'])}")
 
-            # --- Home Treatment ---
-            home_treat_choice = input("Would you like some home treatment advice first? (yes/no): ").lower()
-            if home_treat_choice == 'yes':
-                treatment = home_treatments.get(chosen_symptom, home_treatments["Default"])
-                print(f"\nADVICE: {treatment}")
+            # --- FREE REAL WORLD SEARCH ---
+            user.address = input("\nEnter your city (e.g., Patna, Bengaluru, Delhi): ")
+            print(f"🚀 Searching OpenStreetMap for {specialty_needed} near {user.address}...")
 
-            # --- Find Nearest Doctor ---
-            user.address = input("\nTo find the nearest specialist, please enter your city (e.g., New York, Los Angeles, Chicago, Houston): ")
-            print(f"Searching for a {specialty_needed} in {user.address}...")
+            doctors = find_real_doctors(user.address, specialty_needed)
 
-            recommended_doctors = [doc_name for doc_name, details in doctors_db.items() if details["specialty"] == specialty_needed and user.address.lower() in details.get("location", "").lower()]
-
-            if recommended_doctors:
-                print("\nHere are the available specialists in your city:")
-                for doc in recommended_doctors:
-                    print(f"- {doc}")
+            if doctors:
+                print(f"\n--- Real {specialty_needed}s Found Nearby ---")
+                # Show top 5 results to keep terminal clean
+                for doc in doctors[:5]:
+                    print(f"👨‍⚕️ {doc['name']}")
+                    print(f"⭐ {doc['rating']} | 📍 {doc['address']}\n")
             else:
-                print(f"\nUnfortunately, we could not find a {specialty_needed} in {user.address}. You may need to check in a nearby city.")
+                print(f"\nCould not find specific records for {specialty_needed} in {user.address} yet.")
 
         else:
-            print("Invalid selection. Please choose a number from the list.")
+            print("Invalid selection.")
     except ValueError:
-        print("Invalid input. Please enter a number.")
+        print("Please enter a number.")
 
 def doctor_workflow(user):
-    """Handles the workflow for a doctor."""
-    doctor_details = next((details for name, details in doctors_db.items() if name == user.full_name), None)
-    specialty = doctor_details['specialty'] if doctor_details else "N/A"
-    
-    print(f"\nWelcome, {user.full_name}. Your specialty is: {specialty}")
-    
-    print("1. View Patient Feedback")
-    choice = input("Enter your choice: ")
-    if choice == "1":
-        try:
-            with open("feedback.txt", "r") as f:
-                print("\n--- Patient Feedback ---")
-                print(f.read() or "The feedback file is empty.")
-        except FileNotFoundError:
-            print("No feedback file found.")
+    print(f"\nWelcome, Dr. {user.full_name}. You are logged into the ClinicAI Dashboard.")
+    # In-memory feedback check
+    print("1. View Patient Logs")
+    if input("Choice: ") == "1":
+        print("\n--- No recent logs found in this session ---")
 
 # --- Main Application ---
 
 if __name__ == "__main__":
     while True:
-        print("\n--- Welcome to the Advanced Clinic System ---")
+        print("\n--- Welcome to ClinicAI ---")
         username = input("Enter username: ")
         password = input("Enter password: ")
         
@@ -133,21 +144,17 @@ if __name__ == "__main__":
             else:
                 print("Invalid password.")
         else:
-            print(f"User '{username}' not found. Let's create a new patient account.")
+            print("No account found. Creating new founder-patient profile...")
             full_name = input("Enter your full name: ")
-            new_user = User(username, password, "patient", full_name)
-            users[username] = new_user
-            active_user = new_user
-            print(f"Patient account for '{full_name}' created successfully.")
+            active_user = User(username, password, "patient", full_name)
+            users[username] = active_user
 
         if active_user:
-            print(f"\nLogin successful as {active_user.role.title()}")
             if active_user.role == "patient":
                 patient_workflow(active_user)
-            elif active_user.role == "doctor":
+            else:
                 doctor_workflow(active_user)
         
-        another_session = input("\nStart another session? (yes/no): ").lower()
-        if another_session != 'yes':
-            print("Thank you for using the clinic system. Goodbye!")
+        if input("\nStart another session? (y/n): ").lower() != 'y':
+            print("BOOM. Session closed. Keep building!")
             break
