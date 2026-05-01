@@ -24,14 +24,27 @@ users = {
     "davis": User("davis", "docpass1", "doctor", "Dr. Davis"),
 }
 
+# --- Updated Data Structures ---
+
 symptom_to_specialty = {
     "Chest Pain": "Cardiologist",
     "Skin Rash": "Dermatologist",
     "Fever": "General Physician",
+    "Toothache": "Dentist",
+    "Blurry Vision": "Ophthalmologist",
+    "Back Pain": "Orthopedic",
+    "Stomach Ache": "Gastroenterologist",
+    "Persistent Cough": "Pulmonologist"
 }
 
 home_treatments = {
     "Fever": "Rest and drink plenty of fluids.",
+    "Toothache": "Rinse with warm salt water and avoid cold foods.",
+    "Skin Rash": "Keep the area clean and apply a cool compress.",
+    "Back Pain": "Maintain good posture and try light stretching.",
+    "Stomach Ache": "Eat light, bland foods like toast or rice.",
+    "Persistent Cough": "Stay hydrated and try honey for throat relief.",
+    "Blurry Vision": "Rest your eyes and avoid bright screens.",
     "Default": "Consult a doctor for an accurate diagnosis."
 }
 
