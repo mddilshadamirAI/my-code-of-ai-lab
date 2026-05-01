@@ -6,8 +6,7 @@
   # Use https://search.nixos.org/packages to find packages
   packages = [
     # pkgs.go
-    pkgs.python314
-    pkgs.uv
+    pkgs.python312
     pkgs.python312Packages.pip
     pkgs.python312Packages.requests
     # pkgs.python311Packages.pip
