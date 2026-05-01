@@ -24,8 +24,6 @@ users = {
     "davis": User("davis", "docpass1", "doctor", "Dr. Davis"),
 }
 
-# --- Updated Data Structures ---
-
 symptom_to_specialty = {
     "Chest Pain": "Cardiologist",
     "Skin Rash": "Dermatologist",
@@ -48,27 +46,21 @@ home_treatments = {
     "Default": "Consult a doctor for an accurate diagnosis."
 }
 
-# --- Free API Engine (No Key Required) ---
+# --- Free API Engine ---
 def find_real_doctors(city, specialty):
-    # Use a specific User-Agent so the free service doesn't block you
     headers = {
         'User-Agent': 'ClinicAI_Founder_App_Contact_mddilshad@gmail.com' 
     }
     
-    # Try a different "Mirror" server if the first one is busy
     geo_url = f"https://nominatim.openstreetmap.org/search?city={city}&format=json"
     
     try:
-        # Step 1: Get City Coords
         geo_res = requests.get(geo_url, headers=headers).json()
         if not geo_res:
-            print("Could not find city coordinates.")
             return []
         
         lat, lon = geo_res[0]['lat'], geo_res[0]['lon']
 
-        # Step 2: Search for Doctors
-        # We use a more stable mirror: 'https://overpass.kumi.systems/api/interpreter'
         overpass_url = "https://overpass.kumi.systems/api/interpreter"
         overpass_query = f"""
         [out:json][timeout:25];
@@ -78,7 +70,6 @@ def find_real_doctors(city, specialty):
         
         response = requests.get(overpass_url, params={'data': overpass_query}, headers=headers)
         
-        # Check if the response is actually JSON
         if response.status_code == 200:
             data = response.json()
             real_doctors = []
@@ -90,19 +81,19 @@ def find_real_doctors(city, specialty):
                     "rating": "Free Data"
                 })
             return real_doctors
-        else:
-            print(f"API Server returned error: {response.status_code}")
-            return []
-
-    except Exception as e:
-        print(f"Connection Error: {e}")
+        return []
+    except Exception:
         return []
 
-# --- Workflows ---
+# --- Workflows & Logging ---
+
+def log_case(user, symptom, clinic_found):
+    """Saves patient activity to a file for doctors to review."""
+    with open("patient_history.txt", "a") as f:
+        f.write(f"[{time.ctime()}] Patient: {user.full_name} | Symptom: {symptom} | City: {user.address} | Found: {clinic_found}\n")
 
 def patient_workflow(user):
-    print(f"\nWelcome, {user.full_name}!")
-    
+    print(f"\n--- PATIENT PORTAL | Welcome, {user.full_name} ---")
     symptoms_list = list(symptom_to_specialty.keys())
     for i, symptom in enumerate(symptoms_list, 1):
         print(f"{i}. {symptom}")
@@ -115,59 +106,91 @@ def patient_workflow(user):
             
             print(f"\nInitial Advice: {home_treatments.get(chosen_symptom, home_treatments['Default'])}")
 
-            # --- FREE REAL WORLD SEARCH ---
-            user.address = input("\nEnter your city (e.g., Patna, Bengaluru, Delhi): ")
-            print(f"🚀 Searching OpenStreetMap for {specialty_needed} near {user.address}...")
+            user.address = input("\nEnter your city (e.g., Patna, Jehanabad): ")
+            print(f"🚀 Searching for {specialty_needed} near {user.address}...")
 
             doctors = find_real_doctors(user.address, specialty_needed)
 
+            first_clinic = "None found"
             if doctors:
                 print(f"\n--- Real {specialty_needed}s Found Nearby ---")
-                # Show top 5 results to keep terminal clean
                 for doc in doctors[:5]:
-                    print(f"👨‍⚕️ {doc['name']}")
-                    print(f"⭐ {doc['rating']} | 📍 {doc['address']}\n")
+                    print(f"👨‍⚕️ {doc['name']} | 📍 {doc['address']}")
+                first_clinic = doctors[0]['name']
             else:
-                print(f"\nCould not find specific records for {specialty_needed} in {user.address} yet.")
+                print(f"\nNo specific records for {specialty_needed} found in {user.address}.")
+            
+            log_case(user, chosen_symptom, first_clinic)
 
         else:
             print("Invalid selection.")
     except ValueError:
         print("Please enter a number.")
 
-def doctor_workflow(user):
-    print(f"\nWelcome, Dr. {user.full_name}. You are logged into the ClinicAI Dashboard.")
-    # In-memory feedback check
-    print("1. View Patient Logs")
-    if input("Choice: ") == "1":
-        print("\n--- No recent logs found in this session ---")
+def doctor_dashboard(user):
+    while True:
+        print(f"\n--- DOCTOR PORTAL | Dr. {user.full_name} ---")
+        print("1. View Patient Case Logs")
+        print("2. Logout")
+        
+        choice = input("\nSelection: ")
+        if choice == "1":
+            try:
+                with open("patient_history.txt", "r") as f:
+                    print("\n--- Clinical Patient Logs ---")
+                    print(f.read())
+            except FileNotFoundError:
+                print("\n[!] No patient records found yet.")
+        elif choice == "2":
+            break
 
 # --- Main Application ---
 
 if __name__ == "__main__":
     while True:
         print("\n--- Welcome to ClinicAI ---")
-        username = input("Enter username: ")
-        password = input("Enter password: ")
+        print("1. Patient Portal (Login/Sign-up)")
+        print("2. Doctor Portal (Login)")
+        print("3. Exit")
+        
+        portal_choice = input("Select Option: ")
+        
+        if portal_choice == "3":
+            print("BOOM. Session closed. Keep building!")
+            break
+
+        username = input("Username: ")
+        password = input("Password: ")
         
         active_user = None
+        
         if username in users:
             if users[username].check_password(password):
                 active_user = users[username]
             else:
                 print("Invalid password.")
+                continue
         else:
-            print("No account found. Creating new founder-patient profile...")
-            full_name = input("Enter your full name: ")
-            active_user = User(username, password, "patient", full_name)
-            users[username] = active_user
+            if portal_choice == "1":
+                print("No account found. Creating new patient profile...")
+                full_name = input("Enter your full name: ")
+                active_user = User(username, password, "patient", full_name)
+                users[username] = active_user
+            elif portal_choice == "2":
+                print("No account found. Creating new doctor profile...")
+                full_name = input("Enter your full name: ")
+                active_user = User(username, password, "doctor", full_name)
+                users[username] = active_user
+            else:
+                print("Invalid portal choice.")
+                continue
 
         if active_user:
-            if active_user.role == "patient":
-                patient_workflow(active_user)
+            if active_user.role == "doctor":
+                doctor_dashboard(active_user)
             else:
-                doctor_workflow(active_user)
-        
+                patient_workflow(active_user)
+
         if input("\nStart another session? (y/n): ").lower() != 'y':
             print("BOOM. Session closed. Keep building!")
             break
