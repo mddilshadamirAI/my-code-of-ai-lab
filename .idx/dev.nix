@@ -9,6 +9,7 @@
     pkgs.python312
     pkgs.python312Packages.pip
     pkgs.python312Packages.requests
+    pkgs.python312Packages.streamlit
     # pkgs.python311Packages.pip
     # pkgs.nodejs_22
     # pkgs.nodePackages.nodemon
