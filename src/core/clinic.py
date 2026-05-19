@@ -36,13 +36,13 @@ symptom_to_specialty = {
 }
 
 home_treatments = {
-    "Fever": "Rest and drink plenty of fluids.",
-    "Toothache": "Rinse with warm salt water and avoid cold foods.",
-    "Skin Rash": "Keep the area clean and apply a cool compress.",
-    "Back Pain": "Maintain good posture and try light stretching.",
-    "Stomach Ache": "Eat light, bland foods like toast or rice.",
-    "Persistent Cough": "Stay hydrated and try honey for throat relief.",
-    "Blurry Vision": "Rest your eyes and avoid bright screens.",
+    "Fever": "Rest and drink plenty of fluids. Consult a doctor for an accurate diagnosis",
+    "Toothache": "Rinse with warm salt water and avoid cold foods. Consult a doctor for an accurate diagnosis",
+    "Skin Rash": "Keep the area clean and apply a cool compress. Consult a doctor for an accurate diagnosis",
+    "Back Pain": "Maintain good posture and try light stretching. Consult a doctor for an accurate diagnosis",
+    "Stomach Ache": "Eat light, bland foods like toast or rice. Consult a doctor for an accurate diagnosis",
+    "Persistent Cough": "Stay hydrated and try honey for throat relief. Consult a doctor for an accurate diagnosis",
+    "Blurry Vision": "Rest your eyes and avoid bright screens. Consult a doctor for an accurate diagnosis",
     "Default": "Consult a doctor for an accurate diagnosis."
 }
 
@@ -86,10 +86,17 @@ def find_real_doctors(city, specialty):
         return []
 
 # --- Workflows & Logging ---
+def log_feedback():
+    """Saves user feedback to a file."""
+    feedback = input("\nWe'd love your feedback! Please share your thoughts: ")
+    with open("data/feedback.txt", "a") as f:
+        f.write(f"[{time.ctime()}] Feedback: {feedback}\n")
+    print("Thank you for your feedback!")
+
 
 def log_case(user, symptom, clinic_found):
     """Saves patient activity to a file for doctors to review."""
-    with open("patient_history.txt", "a") as f:
+    with open("data/patient_history.txt", "a") as f:
         f.write(f"[{time.ctime()}] Patient: {user.full_name} | Symptom: {symptom} | City: {user.address} | Found: {clinic_found}\n")
 
 def patient_workflow(user):
@@ -136,7 +143,7 @@ def doctor_dashboard(user):
         choice = input("\nSelection: ")
         if choice == "1":
             try:
-                with open("patient_history.txt", "r") as f:
+                with open("data/patient_history.txt", "r") as f:
                     print("\n--- Clinical Patient Logs ---")
                     print(f.read())
             except FileNotFoundError:
@@ -190,6 +197,7 @@ if __name__ == "__main__":
                 doctor_dashboard(active_user)
             else:
                 patient_workflow(active_user)
+            log_feedback()
 
         if input("\nStart another session? (y/n): ").lower() != 'y':
             print("BOOM. Session closed. Keep building!")
