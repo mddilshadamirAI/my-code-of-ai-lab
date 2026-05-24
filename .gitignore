@@ -1,5 +1,6 @@
-my-venv/
-.venv/
-__pycache__/
+/my-venv/
+/.venv/
+/__pycache__/
 *.pyc
-venv/
+/venv
+/.idx/
