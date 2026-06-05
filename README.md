@@ -18,13 +18,3 @@ ClinicAI is a specialized AI-driven health management system designed to bridge 
 
 ## This repository contains my codes of clinic and several other apps under process..
 This also contains a basic career guidance tool.
-## This repository contains my codes of clinic and several other apps under process..
-This also contains a basic career guidance tool.
-## This repository contains my codes of clinic and several other apps under process..
-This also contains a basic career guidance tool.
-## This repository contains my codes of clinic and several other apps under process..
-This also contains a basic career guidance tool.
-## This repository contains my codes of clinic and several other apps under process..
-This also contains a basic career guidance tool.
-## This repository contains my codes of clinic and several other apps under process..
-This also contains a basic career guidance tool.
