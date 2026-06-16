@@ -3,8 +3,6 @@
 # 🏥 CLINICAI: HEALTHCARE OS
 ### AI-Driven Medical Navigation & Clinical Management
 
-[**Launch Live App**](https://clinicai-demo.streamlit.app/) • [**View Source Code**](https://github.com/mddilshadamirAI/ClinicAI) • [**Report an Issue**](https://github.com/mddilshadamirAI/ClinicAI/issues)
-
 ---
 
 ### 🌐 PROJECT MISSION
