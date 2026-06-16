@@ -1,8 +1,6 @@
 <div align="center">
 
-# 🏥 CLINICAI: HEALTHCARE OS
-### AI-Driven Medical Navigation & Clinical Management
-
+# CODES OF CLINIC APP AND SERVICE APP
 ---
 
 ### 🌐 PROJECT MISSION
